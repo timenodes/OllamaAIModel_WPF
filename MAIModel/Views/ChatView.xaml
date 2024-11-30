@@ -1,0 +1,99 @@
+<UserControl x:Class="MAIModel.Views.ChatView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+             xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+             xmlns:local="clr-namespace:MAIModel.Views"
+              xmlns:localVM="clr-namespace:MAIModel.ViewModels"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <!--资源字典：字典合集，添加控件样式-->
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Style/ButtonStyle.xaml"/>
+                <ResourceDictionary Source="Style/TextBoxStyle.xaml"/>
+                <ResourceDictionary Source="Style/LabelStyle.xaml"/>
+                <ResourceDictionary Source="Style/ComboBoxStyle.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="#0F000F">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="200" />
+            <RowDefinition Height="50" />
+        </Grid.RowDefinitions>
+        <!-- 第1行：多行文本框，充满、只读 -->
+        <TextBox  Name="OutputListBox" Grid.Row="0"  Margin="5"
+                AcceptsReturn="True" 
+                IsReadOnly="True"
+                TextWrapping="Wrap" 
+                Text="{Binding Message, Mode=OneWay}" 
+                Focusable="True"
+                VerticalScrollBarVisibility="Auto" 
+                HorizontalScrollBarVisibility="Auto">
+            <!--0、方式方法：添加Interaction.Triggers器，实现文本更新后自动滚动到文本末尾。
+                1、实现原因：数据更新使用的是数据绑定，不在后台直接创建事件，所以需创建触发器实现类似的textBox.ScrollToEnd()功能。
+                2、当前方案：<i:Interaction.Triggers>是触发器开始；
+                    ei:DataTrigger 是数据触发器（注意区别于 WPF 自带的 DataTrigger），它绑定了元素 OutputListBox 的 Text.Length，
+                    当其值不等 0 时执行内部指令；
+                    ei:ChangePropertyAction 指令表示改变属性值，目标元素也是 OutputListBox，属性为插入位置，
+                    也就是光标位置 CaretIndex，将光标位置的值绑定为文本长度；
+                    ei:CallMethodAction：调用方法指令（ei:CallMethodAction） 控制光标滚动到最后，这样即可实现将光标置于文本末尾。
+                3、优于其他方案的原因：使用数据绑定时，不知道其他方案
+                4、技术标准/依赖：引用了System.Windows.Interactivity.WPF库和Microsoft.Expression.Interactions.dll 库
+                    的System.Windows.Interactivity
+                5、技术引用：https://www.cnblogs.com/weiliuhong/p/wpf-textbox-scroll-bottom.html
+            -->
+            <i:Interaction.Triggers>
+                <ei:DataTrigger Binding="{Binding Text.Length, ElementName=OutputListBox}" Comparison="NotEqual" Value="0">
+                    <ei:ChangePropertyAction TargetName="OutputListBox" PropertyName="CaretIndex" 
+                Value="{Binding ElementName=OutputListBox, Path=Text.Length}">
+                    </ei:ChangePropertyAction>
+                    <ei:CallMethodAction MethodName="ScrollToEnd"></ei:CallMethodAction>
+                </ei:DataTrigger>
+            </i:Interaction.Triggers>
+        </TextBox>
+
+        <!-- 第2行：多行文本框，充满显示 -->
+        <TextBox x:Name="InputBox"
+             Text="{Binding InputText , Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+             Grid.Row="1" 
+             VerticalScrollBarVisibility="Auto" 
+             AcceptsReturn="True" 
+             Margin="5">
+            <!--
+                 0、方式方法：给文本框绑定命令
+                 1、实现原因：正常情况下，文本框无法直接绑定命令
+                 2、当前方案：添加<TextBox.InputBindings>键盘输入绑定
+                 3、优于其他方案的原因：只懂这个
+                 4、技术标准/依赖：System.Windows.Input.KeyBinding
+                 5、技术引用：###
+            -->
+            <TextBox.InputBindings>
+                <KeyBinding Command="{Binding SubmitQuestionCommand}" Key="Enter"/>
+            </TextBox.InputBindings>
+        </TextBox>
+
+        <!-- 第3行：按钮，宽高100，50 -->
+        <Button x:Name="BtnSubmit" Content="提交" 
+                HorizontalAlignment="Right"
+                Style="{StaticResource RoundCornerButtonStyle}"
+                Command="{Binding SubmitQuestionCommand}" 
+                Grid.Row="2" 
+                Width="100" 
+                Height="30"  />
+        <Button x:Name="BtnNewChat" Content="新建会话" 
+                HorizontalAlignment="Right"
+                Style="{StaticResource RoundCornerButtonStyle}"
+                Command="{Binding NewSessionCommand}" 
+                Grid.Row="2" 
+                Width="100" 
+                Height="30" 
+                Margin="0,10,120,10"/>
+    </Grid>
+</UserControl>
