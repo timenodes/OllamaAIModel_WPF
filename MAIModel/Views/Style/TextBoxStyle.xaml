@@ -1,0 +1,195 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Control.BoderBrush" Color="#CBCBCB"/>
+    <!--定义搜索文本框静态样式-->
+    <Style x:Key="SearchBoxStyle" TargetType="TextBox">
+        <Setter Property="Background" Value="#FFF2F3F4"/>               <!--设置背景颜色。-->
+        <Setter Property="Foreground" Value="#515151"/>                 <!--设置前景颜色。-->
+        <Setter Property="Padding" Value="8 0 0 0"/>                      <!--设置内边距。-->
+        <Setter Property="VerticalContentAlignment" Value="Center"/>      <!--垂直对齐。-->
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>      <!--水平对齐。-->
+        <Setter Property="BorderBrush" Value="{StaticResource Control.BoderBrush}"/> <!--使用静态资源Control.BoderBrush作为边框颜色。-->
+        <Setter Property="BorderThickness" Value="1"/>                          <!--设置边框厚度为1。-->
+        <Setter Property="KeyboardNavigation.TabNavigation" Value="None"/>      <!--禁用Tab导航。-->
+        <Setter Property="AllowDrop" Value="true"/>                             <!--允许拖放操作。-->
+        <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst"/>     <!--设置滚动模式为先垂直后水平-->
+        <Setter Property="Stylus.IsFlicksEnabled" Value="False"/>               <!--禁用手写笔的快速滑动功能。-->
+         <!--设置模板-->
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBox}">         <!--定义了TextBox的控件模板-->
+                    <!--外部边框设置
+                    圆角：CornerRadius
+                    背景：Background
+                    边框颜色：BorderBrush
+                    厚度：BorderThickness
+                    启用设备像素对齐：SnapsToDevicePixels
+                    -->
+                    <Border x:Name="border" 
+                            CornerRadius="8"                
+                            Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            SnapsToDevicePixels="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <!--包含两个列定义，第一列用于输入框，第二列用于按钮。-->
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="44"/>
+                            </Grid.ColumnDefinitions>
+                            <!--内部边框，设置了圆角和内边距。-->
+                            <Border x:Name="bdLeft" CornerRadius="8" Margin="4 4 8 4">
+                                <Grid>
+                                    <!--用于显示文本内容，隐藏了滚动条。-->
+                                    <ScrollViewer x:Name="PART_ContentHost" Focusable="false" 
+                                                  HorizontalScrollBarVisibility="Hidden" 
+                                                  VerticalScrollBarVisibility="Hidden"/>
+                                    <!--显示提示文本“输入搜索内容”，初始状态下不可见，当TextBox为空时显示。-->
+                                    <TextBlock Text="选择路径" VerticalAlignment="Center" Margin="10 0" Opacity="0.8">
+                                        <TextBlock.Style>
+                                            <!--定义TextBlock的样式，使用数据触发器在TextBox为空时显示提示文本。-->
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=TextBox},Path=Text}" Value="">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Grid>
+                            </Border>
+                            <!--搜索按钮，位于第二列。-->
+                            <Button Grid.Column="1" Margin="4" Command="{Binding OpenFileDialogCommand}">
+                                <Button.Style>
+                                    <!--定义按钮的样式，设置透明背景和鼠标悬停时的背景颜色变化。-->
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="bd" CornerRadius="8" Background="Transparent">
+                                                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Center"></ContentPresenter>
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="bd" Property="Background" Value="#60CACACA"/>
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </Style>
+                                </Button.Style>
+                                <!--按钮图标，使用路径数据定义了一个放大镜图标。-->
+                                <Path Fill="#C9000000" Margin="8" Stretch="Uniform"  
+                                      Data="M15.7 13.3l-3.81-3.83A5.93 5.93 0 0013 6c0-3.31-2.69-6-6-6S1 2.69 1 6s2.69 6 
+                                      6 6c1.3 0 2.48-.41 3.47-1.11l3.83 3.81c.19.2.45.3.7.3.25 0 .52-.09.7-.3a.996.996 0 
+                                      000-1.41v.01zM7 10.7c-2.59 0-4.7-2.11-4.7-4.7 0-2.59 2.11-4.7 4.7-4.7 2.59 0 4.7 2.11 
+                                      4.7 4.7 0 2.59-2.11 4.7-4.7 4.7z">
+                                    <!--
+                                        ScaleTransform: 用于缩放路径。
+                                        ScaleX: 水平方向的缩放比例，这里设置为1.5。
+                                        ScaleY: 垂直方向的缩放比例，这里也设置为1.5。
+                                    -->
+                                    <Path.RenderTransform>
+                                        <ScaleTransform ScaleX="2.5" ScaleY="2.5"/>
+                                    </Path.RenderTransform>
+                                </Path>
+                            </Button>
+                        </Grid>
+                    </Border>
+                    <!--控件模板触发器-->
+                    <ControlTemplate.Triggers>
+                        <!--当TextBox禁用时，设置边框的不透明度为0.56-->
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Opacity" TargetName="border" Value="0.56"/>
+                        </Trigger>
+                        <!--当鼠标悬停在TextBox上时，设置背景颜色为白色。-->
+                        <Trigger Property="IsMouseOver" Value="true">
+                            <Setter Property="Background" TargetName="border" Value="white"/>
+                        </Trigger>
+                        <!--当TextBox获得键盘焦点时，设置内部边框的背景颜色为#60CACACA，边框颜色为透明，外部边框背景颜色为白色。-->
+                        <Trigger Property="IsKeyboardFocused" Value="true">
+                            <Setter Property="Background" TargetName="bdLeft" Value="#60CACACA"/>
+                            <Setter Property="BorderBrush" TargetName="border" Value="Transparent"/>
+                            <Setter Property="Background" TargetName="border" Value="white"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <!--样式触发器
+            当IsInactiveSelectionHighlightEnabled为true且IsSelectionActive为false时，
+            设置选择区域的背景颜色为系统定义的非活动选择高亮颜色。-->
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true"/>
+                    <Condition Property="IsSelectionActive" Value="false"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="SelectionBrush" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+            </MultiTrigger>
+        </Style.Triggers>
+    </Style>
+    <!--定义搜索文本框静态样式2-->
+    <Style x:Key="SearchBoxStyleTwo" TargetType="TextBox">
+        <Setter Property="Width" Value="500"/>
+        <Setter Property="Height" Value="30"/>
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#F4D3D2" Offset="0.9" />
+                    <GradientStop Color="#aa0aa0" Offset="0.9" />
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Grid>
+                        <Border 
+                        Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="0"
+                            
+                            CornerRadius="15">
+                            <!-- 设置圆角 -->
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <ScrollViewer x:Name="PART_ContentHost" Grid.Column="0" Margin="4,0,0,0"/>
+                                <Button x:Name="roundedTextBox"  Grid.Column="1" Background="Transparent" BorderBrush="Transparent" BorderThickness="0">
+                                    <Button.Content>
+                                        <Path Data="M14.386 14.386C15.333 13.439 16 12.158 16 10.667C16 6.927 12.74 4 8.667 4C4.594 
+                                          4 1.333 6.927 1.333 10.667C1.333 14.407 4.594 17.533 8.667 17.533C10.158 17.533 11.439 
+                                          17.074 12.486 16.127L20.16 23.8L23.8 20.16L16.127 12.486C17.074 11.439 17.533 10.158 
+                                          17.533 8.667C17.533 4.594 14.407 1.333 10.667 1.333C6.927 1.333 3.667 4.594 3.667 
+                                          8.667C3.667 12.74 6.927 16 10.667 16C12.158 16 13.439 15.333 14.386 14.386Z"
+                                  Fill="#FFFFFF" Width="16" Height="16" Stretch="Uniform"/>
+                                    </Button.Content>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <!-- 鼠标悬停时 -->
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="roundedTextBox" Property="Background">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#FFB3B3" Offset="0.4" />
+                                        <GradientStop Color="#D68B8B" Offset="0.7" />
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
