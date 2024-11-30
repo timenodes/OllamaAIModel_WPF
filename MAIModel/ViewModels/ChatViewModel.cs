@@ -4,9 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Windows.Documents;
 using System.Windows.Input;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace MAIModel.ViewModels
 {
@@ -18,7 +16,7 @@ namespace MAIModel.ViewModels
     /// 4、技术标准/依赖：
     /// 5、技术引用：
     /// </summary>
-    public class ChatProViewModel : INotifyPropertyChanged
+    public class ChatViewModel : INotifyPropertyChanged
     {
         #region 字段、属性、集合、命令
 
@@ -28,7 +26,7 @@ namespace MAIModel.ViewModels
         private Chat? chat;                          //构建交互式聊天
         private ShareOllamaObject _ollama; //ollama对象
         private CancellationTokenSource _cancellationTokenSource =new CancellationTokenSource();   //取消令牌来源
-        private FlowDocument _richTextContent;
+        
         #endregion
 
         #region 属性 
@@ -52,18 +50,8 @@ namespace MAIModel.ViewModels
                 OnPropertyChanged();
             }
         }
-        /// <summary>
-        /// AI回复消息
-        /// </summary>
-        public FlowDocument RichTextContent
-        {
-            get => _richTextContent;
-            set
-            {
-                _richTextContent = value;
-                OnPropertyChanged();
-            }
-        }
+
+        
         #endregion
 
         #region 集合
@@ -93,14 +81,15 @@ namespace MAIModel.ViewModels
         #endregion
 
         #region 构造函数
-        public ChatProViewModel()
+        public ChatViewModel()
         {
-            RichTextContent = new FlowDocument(new Paragraph(new Run("Initial text")));
             _cancellationTokenSource = new CancellationTokenSource();
             _conversation = new ObservableCollection<string>();
-            SubmitQuestionCommand = new RelayCommand(async()=>OnSubmitQuestion());
-            StopCurrentChatCommand = new RelayCommand( OnStopCurrentChat);
-            NewSessionCommand = new RelayCommand(OnNewSessionCommand);
+            SubmitQuestionCommand = new RelayCommand(()=>OnSubmitQuestion());
+            StopCurrentChatCommand = new RelayCommand(() => OnStopCurrentChat());
+            NewSessionCommand = new RelayCommand(() => OnNewSessionCommand());
+           
+            
         }
         #endregion
 
@@ -131,18 +120,7 @@ namespace MAIModel.ViewModels
             return true;
         }
 
-        private void AppendTextLine(string text)
-        {
-            var paragraph = new Paragraph(new Run(text));
-            RichTextContent.Blocks.Add(paragraph);
-        }
-        public void AppendText(string text)
-        {
-            TextPointer start = RichTextContent.ContentEnd;      // 获取文档的最后一个位置
-            TextPointer end = start.GetPositionAtOffset(0);
-            TextRange textRange = new TextRange(start, end);    // 创建一个 TextRange 对象
-            textRange.Text = text;                              // 插入文本
-        }
+        
         #endregion
 
         #region 命令方法
@@ -156,11 +134,14 @@ namespace MAIModel.ViewModels
                 if (CheckChatState())       //指示指定的字符串是空、空还是只包含空白字符。
                 {
                     string input = InputText;
-                    //Message += "\r\n###################################################################\r\n\r\n";
-                    //InputText = "";                                               // 清空输入框
-                    AppendTextLine($"【User】: {input}");       //
-                    AppendTextLine($"【AI】=>： {Environment.NewLine}");       //
-                    //string tempText = string.Empty;                               //临时文本，异步方法不直接赋值给属性。
+                    Message += "\r\n###################################################################\r\n\r\n";
+                    InputText = "";                                               // 清空输入框
+                    Conversation.Add($"【User】: {input}{Environment.NewLine}");  //添加信息,到绑定控件
+                    Message += $"【User】 => {input}{Environment.NewLine}";       //
+                    
+                    var responseBuilder = new System.Text.StringBuilder();        //创建响应
+                    Message += $"【AI】=>： {Environment.NewLine}";               // 
+                    string tempText = string.Empty;                               //临时文本，异步方法不直接赋值给属性。
                     if (input.Equals("/clearContext"))
                     {
                         chat = new Chat(_ollama.Ollama);
@@ -176,18 +157,20 @@ namespace MAIModel.ViewModels
                     await foreach (var answerToken in chat.SendAsync(input, _cancellationTokenSource.Token))
                     {
                         await Task.Delay(20);
-                        //tempText = answerToken;
-                        AppendText(answerToken);
+                        tempText = answerToken;
+                        responseBuilder.Append(tempText);    //字符串
+                        Message += tempText;
                         Debug.Print(answerToken);
-                        
                     }
-                    //AppendTextLine(tempText);
                     #endregion
+                    //回答结束
+                    Conversation.Add($"AI: {responseBuilder.ToString()}");
                 }
             }
             catch (Exception ex)
             {
-                AppendText($"Error: {ex.Message}{Environment.NewLine}");
+                Message += $"{ex.Message}\r\n";
+                Conversation.Add($"Error: {ex.Message}");
             }
         }
         private void OnNewSessionCommand()
