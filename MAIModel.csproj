@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\app-logo128.ico</ApplicationIcon>
+  </PropertyGroup>
+
+    <ItemGroup>
+		<None Include="dll\*.dll">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Resources\app-logo128.ico" />
+      <None Remove="Resources\chat64.png" />
+      <None Remove="Resources\setting64.png" />
+    </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OllamaSharp" Version="4.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Windows.Interactivity.WPF" Version="2.0.20525" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\app-logo128.ico" />
+    <Resource Include="Resources\chat64.png" />
+    <Resource Include="Resources\setting64.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Views\ChatProView.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+	
+</Project>
